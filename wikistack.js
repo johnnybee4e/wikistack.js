@@ -15,12 +15,16 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(routes);
+app.use((err,req,res,next) => {
+  console.error(err);
+  res.status(500).send(err.message);
+});
 
 
 
 
 
-models.db.sync({force:true})
+models.db.sync()
 .then(function() {
   console.log('All table created!');
   app.listen(3000, () => {

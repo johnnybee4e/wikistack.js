@@ -10,10 +10,7 @@ const Page = db.define('page', {
   },
   urlTitle:{
     type: Sequelize.STRING,
-    allowNull: false,
-    // validate: {
-    //   isUrl: true
-    // }
+    allowNull: false
   },
   content: {
     type: Sequelize.TEXT,
@@ -26,10 +23,15 @@ const Page = db.define('page', {
     type: Sequelize.DATE,
     defaultValue: Sequelize.NOW
   }
+}, {
+  getterMethods: {
+    route: () => {
+      return '/wiki/' + this.urlTitle;
+    }
+  }
 });
 
 Page.beforeValidate((page) => {
-  console.log('hook fired', page.title);
   page.urlTitle = generateUrlTitle(page.title);
 });
 
@@ -42,13 +44,12 @@ const User = db.define('user', {
   email: {
     type: Sequelize.STRING,
     allowNull: false,
+    unique: true,
+    validate : {
+      isEmail: true
+    }
   },
 });
-
-User.findOrCreate({
-  where: {
-    id: Page.authorId
-  }});
 
 Page.belongsTo(User, {as: 'author'});
 
@@ -65,8 +66,3 @@ function generateUrlTitle(title) {
     return Math.random().toString(36).substring(2,7);
   }
 }
-
-
-// afterValidate: () => {
-//   return '/wiki/' + this.urlTitle;
-// }
