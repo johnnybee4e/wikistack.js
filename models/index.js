@@ -6,22 +6,18 @@ const db = new Sequelize('postgres://localhost:5432/wikistack', {
 const Page = db.define('page', {
   title: {
     type: Sequelize.STRING,
-    validate: {
-      allowNull: false
-    }
+    allowNull: false
   },
   urlTitle:{
     type: Sequelize.STRING,
-    validate: {
-      allowNull: false,
-      isUrl: true
-    }
+    allowNull: false,
+    // validate: {
+    //   isUrl: true
+    // }
   },
   content: {
     type: Sequelize.TEXT,
-    validate: {
-      allowNull: false
-    }
+    allowNull: false
   },
   status: {
     type: Sequelize.ENUM('open','close')
@@ -30,32 +26,47 @@ const Page = db.define('page', {
     type: Sequelize.DATE,
     defaultValue: Sequelize.NOW
   }
-}, {
-  urlGetterMethods: {
-    urlRoute() {
-      return '/wiki/' + this.urlTitle;
-    }
-  }
+});
+
+Page.beforeValidate((page) => {
+  console.log('hook fired', page.title);
+  page.urlTitle = generateUrlTitle(page.title);
 });
 
 
 const User = db.define('user', {
   name: {
     type: Sequelize.STRING,
-    validate: {
-      allowNull: false
-    }
+    allowNull: false
   },
   email: {
     type: Sequelize.STRING,
-    validate: {
-      allowNull: false,
-      isEmail: true
-    }
+    allowNull: false,
   },
 });
 
+User.findOrCreate({
+  where: {
+    id: Page.authorId
+  }});
+
+Page.belongsTo(User, {as: 'author'});
 
 module.exports = {
   db, Page, User
 };
+
+
+
+function generateUrlTitle(title) {
+  if(title) {
+  return title.replace(/\s+/g,'_').replace(/\W/g,'');
+  } else {
+    return Math.random().toString(36).substring(2,7);
+  }
+}
+
+
+// afterValidate: () => {
+//   return '/wiki/' + this.urlTitle;
+// }

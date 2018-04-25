@@ -20,7 +20,7 @@ app.use(routes);
 
 
 
-models.db.sync()
+models.db.sync({force:true})
 .then(function() {
   console.log('All table created!');
   app.listen(3000, () => {
