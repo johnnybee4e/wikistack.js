@@ -5,18 +5,20 @@ const nunjucks = require('nunjucks');
 const path = require('path');
 const app = express();
 const models = require('./models');
+const routes = require('./routes');
 app.use(morgan('dev'));
 
 const env = nunjucks.configure('views', {noCache: true});
 app.set('view engine', 'html');
 app.engine('html', nunjucks.render);
 app.use(express.static(path.join(__dirname, '/public')));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(routes);
 
 
 
-app.get('/', (req,res,next) => {
-  res.send('./index.html');
-});
+
 
 models.db.sync()
 .then(function() {
